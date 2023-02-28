@@ -1,6 +1,6 @@
 const net = require('net');
 const port = 20058;
-const host = '10.118.210.10';
+const host = '10.118.208.162';
 const server = net.createServer();
 const allTag = ['E28068942000501F8568A937', 'E28068942000401F8568A137', 'E28068942000401F85689D37', 'E28068942000501F85689937', 'E280689420004024C8120DFD']
 
