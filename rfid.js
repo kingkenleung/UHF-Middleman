@@ -1,6 +1,8 @@
 const net = require('net');
-const port = 20058;
-const host = '10.118.208.162';
+const {LapCounterWsServer} = require('./module/ws-server.js');
+const port = 8080;
+// const host = '10.118.208.162';
+const host = '192.168.128.85'
 const server = net.createServer();
 const allTag = ['E28068942000501F8568A937', 'E28068942000401F8568A137', 'E28068942000401F85689D37', 'E28068942000501F85689937', 'E280689420004024C8120DFD']
 
@@ -13,6 +15,7 @@ let sockets = [];
 
 const packetHead = 'PacketCount';
 
+const LcServer = new LapCounterWsServer();
 
 server.on('connection', (sock) => {
     console.log('CONNECTED: ' + sock.remoteAddress + ':' + sock.remotePort);
@@ -25,6 +28,7 @@ server.on('connection', (sock) => {
             started = true
             try {
                 const rawTCPObj = JSON.parse(`${tmp}`);
+                console.log(tmp, rawTCPObj)
                 const rfidLog = {
                     tags: rawTCPObj.tag.split(','),
                     timestamp: Date.parse(rawTCPObj.createTime)
@@ -32,6 +36,7 @@ server.on('connection', (sock) => {
                 // console.log(rfidLog)
                 console.log("\n" + rawTCPObj.createTime)
                 for (let tag of rfidLog.tags) {
+                    LcServer.sendTags(tag)
                     if (allTag.indexOf(tag) != -1)
                         console.log(`RFID Tag ${allTag.indexOf(tag) + 1} just walked by!`)
                     else
@@ -41,12 +46,14 @@ server.on('connection', (sock) => {
             }
             catch (e) {
                 console.log(e)
+                console.log(started)
             }
 
             tmp = "";
         }
         if (started) {
             tmp = tmp + data;
+            console.log(tmp)
         }
 
         // console.log('DATA ' + sock.remoteAddress + ': ' + data);
