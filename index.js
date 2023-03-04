@@ -1,10 +1,15 @@
 const net = require('net');
 const axios = require('axios').default;
+const io = require('socket.io')(3000);
+
+
 
 const pycnetAPIKey = "f59l28c0mKU8BBHFVL2UZ3SMf23J3U7oFkYooOn5CdPSaq4NQZmdZPcrEFh6zJFVGVYKye0Y9fb1ebt9hS4XgmmIdFUh9xyrRs6HlJdHh4yQIY88XVBAzSi3yg9X1lWLdR0GWu2cNSNx2KYWxdIv7FKVViUuhtgN62OxfrJL4SNfL7h4zrN361NCeJ1IequuTA9N25MiMZlLCviMQ6t4bUfX5U4VLFcPny2nfcvziEGnem3PZZUbLspEjpRPYEz2"
 
 const port = 20058;
 const host = '10.118.208.175';
+
+// Create a TCP server to receive packets
 const server = net.createServer();
 
 // This will be fetched from PYCnet API
@@ -61,6 +66,7 @@ server.on('connection', (sock) => {
 
         // Time on UHF sensor may not be accurate, so only the tags are posted to PYCnet as array
         postTags(rfidLog.tags)
+        io.emit('data', data.toString());
       }
       catch (e) {
         console.log(`${data}`)
@@ -73,11 +79,7 @@ server.on('connection', (sock) => {
     if (started) {
       packet_buffer = packet_buffer + data;
     }
-
-
   });
-
-
 
 
   // Add a 'close' event handler to this instance of socket
@@ -87,5 +89,23 @@ server.on('connection', (sock) => {
     })
     if (index !== -1) sockets.splice(index, 1);
     console.log('CLOSED: ' + sock.remoteAddress + ' ' + sock.remotePort);
+  });
+});
+
+
+// Handle socket.io connections
+io.on('connection', (socket) => {
+  console.log('Socket.io client connected');
+
+  // Handle incoming data from socket.io client
+  socket.on('data', (data) => {
+    console.log('Received data:', data);
+
+    // Do something with the data
+  });
+
+  // Handle client disconnection
+  socket.on('disconnect', () => {
+    console.log('Socket.io client disconnected');
   });
 });
